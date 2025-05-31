@@ -135,34 +135,27 @@ bindsym $sup+Shift+u resize shrink width 5px or 5ppt
 bindsym $sup+i resize grow height 5px or 5ppt
 bindsym $sup+Shift+i resize shrink height 5px or 5ppt
 
-
 bar {
-    output {{ PRIMARY_DISPLAY }}
-    tray_output {{ PRIMARY_DISPLAY }}
-
+    output primary
+    tray_output primary
+    position top
     font pango:Noto Sans Mono 11
     status_command i3blocks
-    position top
-
-    colors {
-    	inactive_workspace #555555 #222222 #888888
-	    urgent_workspace   #2f343a #900000 #ffffff
-    }
 }
+{%- for display in STATUSBAR_DISPLAYS %}
 bar {
-    {%- for output in SECONDARY_DISPLAYS %}
-    output {{ output }}
-    {%- endfor %}
-    tray_output none
-
+    output {{ display }}
     font pango:Noto Sans Mono 11
     position top
-
-    colors {
-    	inactive_workspace #555555 #222222 #888888
-	    urgent_workspace   #2f343a #900000 #ffffff
-    }
 }
+{%- endfor %}
+{%- for display in OTHER_DISPLAYS %}
+bar {
+    output {{ display }}
+    position top
+    font pango:Noto Sans Mono 11
+}
+{%- endfor %}
 
 new_window pixel 2
 focus_follows_mouse no
