@@ -137,11 +137,8 @@ bindsym $sup+Shift+i resize shrink height 5px or 5ppt
 
 
 bar {
-    output eDP-1
-    output DP-2-8
-    output DP-3
-    output DP-3-8
-    tray_output eDP-1
+    output {{ PRIMARY_DISPLAY }}
+    tray_output {{ PRIMARY_DISPLAY }}
 
     font pango:Noto Sans Mono 11
     status_command i3blocks
@@ -153,9 +150,11 @@ bar {
     }
 }
 bar {
-    output DP-2-1-8
-    output DP-3-1-8
+    {%- for output in SECONDARY_DISPLAYS %}
+    output {{ output }}
+    {%- endfor %}
     tray_output none
+
     font pango:Noto Sans Mono 11
     position top
 
