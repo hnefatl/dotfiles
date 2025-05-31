@@ -1,3 +1,4 @@
+{% if LAPTOP -%}
 #!/usr/bin/env perl
 #
 # Copyright 2014 Pierre Mavro <deimos@deimos.fr>
@@ -73,3 +74,4 @@ if ($status eq 'Discharging') {
 }
 
 exit(0);
+{%- endif %}

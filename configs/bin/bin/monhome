@@ -1,3 +1,4 @@
+{% if LAPTOP %}
 #!/bin/bash
 
 function act {
@@ -30,3 +31,5 @@ export -f act
 # If the screens aren't in the desired state, die after a few seconds, to avoid multiple
 # invocations from stacking in the background
 timeout 5s bash -c act
+
+{% endif %}

@@ -108,6 +108,7 @@ min_width=CPU 100.00%
 [weather]
 interval=600
 
+{%- if LAPTOP %}
 # Battery indicator
 #
 # The battery instance defaults to 0.
@@ -115,6 +116,7 @@ interval=600
 label=BAT 
 #instance=1
 interval=30
+{% endif %}
 
 # Date Time
 #

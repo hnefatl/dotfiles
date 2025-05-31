@@ -1,3 +1,4 @@
+{% if LAPTOP -%}
 #!/usr/bin/env bash
 # Copyright (C) 2014 Alexander Keller <github@nycroth.com>
 
@@ -54,3 +55,4 @@ elif [[ $QUALITY -lt 60 ]]; then
 elif [[ $QUALITY -lt 40 ]]; then
     echo "#FF0000"
 fi
+{%- endif %}

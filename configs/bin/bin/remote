@@ -1,3 +1,4 @@
+{% if WORK %}
 #!/usr/bin/env bash
 
 #if ! gcertstatus --check_ssh --quiet ; then
@@ -16,3 +17,5 @@ workspace_name="$1"
 shift
 
 rw kcollister-cloud.c.googlers.com -S --shpool_session="$workspace_name" --enable_x_forwarding --check_remaining --reconnect_loop
+
+{% endif %}

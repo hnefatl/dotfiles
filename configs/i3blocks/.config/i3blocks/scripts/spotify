@@ -47,11 +47,14 @@ if [[ "$album" != "" ]] ; then
 fi
 
 # Trim the full string to $length characters
+{#- Raw because ${# inside here gets parsed as a comment. #}
+{%- raw %}
 if [[ ${#fullstring} -gt $length ]] ; then
     shortstring="${fullstring:0:$((length - 3))}..."
 else
     shortstring="${fullstring:0:$length}"
 fi
+{%- endraw %}
 
 # Change the colour of the playing button depending on playback
 if [[ "$status" == "Playing" ]] ; then
