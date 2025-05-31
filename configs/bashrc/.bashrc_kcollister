@@ -26,3 +26,7 @@ alias hgupp='hg up "parents(.)"'
 alias alert="echo -e '\a' ; notify-send 'Alert'"
 
 PATH="$PATH:/home/kcollister/.local/bin"
+
+{%- if WORK %}
+source .bashrc_kcollister_work
+{%- endif -%}

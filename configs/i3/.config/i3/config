@@ -2,9 +2,13 @@ set $alt Mod1
 set $sup Mod4
 set $caps Mod3
 
-# Autolock on suspend
+# Handle suspend after timeout
+{%- if WORK %}
 exec --no-startup-id xss-lock --transfer-sleep-lock -- /usr/share/goobuntu-desktop-files/xsecurelock.sh
 exec --no-startup-id env LOCKED_BY_SESSION_IDLE=true xautolock -time 10 -locker /usr/share/goobuntu-desktop-files/xsecurelock.sh
+{%- else %}
+exec --no-startup-id xidlehook --not-when-fullscreen --not-when-audio --timer 1800 'systemctl suspend' ''
+{%- endif %}
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
@@ -13,14 +17,8 @@ font pango:Noto Sans Mono 10
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $caps
 
-# Start a terminal
-bindsym $caps+t exec --no-startup-id $TERMINAL
-
-# Start chromium
-bindsym $caps+w exec --no-startup-id $BROWSER
-
-# Start IDE
-bindsym $caps+c exec --no-startup-id clion
+bindsym $caps+t exec --no-startup-id {% if "terminator" in PATH_BINARIES %}terminator{% else %}xterm{% endif %}
+bindsym $caps+w exec --no-startup-id {% if "firefox" in PATH_BINARIES %}firefox{% else %}chrome{% endif %}
 
 # kill focused window
 bindsym $sup+q kill
@@ -76,7 +74,7 @@ bindsym $sup+7 workspace number 7
 bindsym $sup+8 workspace number 8
 bindsym $sup+9 workspace number 9
 bindsym $sup+0 workspace number 10
-bindsym $sup+grave workspace meetings
+bindsym $sup+grave workspace {% if WORK %}meetings{% else %}main{% endif %}
 bindsym $sup+minus workspace vert
 
 bindsym $sup+m workspace next
@@ -111,7 +109,7 @@ bindsym $sup+Shift+r restart
 # Alternative is i3-msg restart, preferred
 #bindsym $sup+r restart
 # exit i3 (logs you out of your X session)
-#bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $sup+Shift+q exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # resize window (you can also use the mouse for that)
 #mode "resize" {
@@ -192,8 +190,13 @@ bindsym Shift+XF86MonBrightnessUp exec --no-startup-id "brightnessctl set +1% ; 
 bindsym Shift+XF86MonBrightnessDown exec --no-startup-id "brightnessctl set 1%- ; pkill -RTMIN+12 i3blocks"
 
 # Audio commands
+{%- if PC %}
+{#- PC keyboard has a play/pause physical button which always sends a play keypress #}
+bindsym XF86AudioPlay exec --no-startup-id "playerctl -p spotify play-pause ; pkill -RTMIN+11 i3blocks"
+{%- else %}
 bindsym XF86AudioPlay exec --no-startup-id "playerctl -p spotify play ; pkill -RTMIN+11 i3blocks"
 bindsym XF86AudioPause exec --no-startup-id "playerctl -p spotify pause ; pkill -RTMIN+11 i3blocks"
+{%- endif %}
 bindsym XF86AudioNext exec --no-startup-id "playerctl -p spotify next ; sleep 0.1 ; pkill -RTMIN+11 i3blocks"
 bindsym XF86AudioPrev exec --no-startup-id "playerctl -p spotify previous ; sleep 0.1 ; pkill -RTMIN+11 i3blocks"
 bindsym $sup+p exec --no-startup-id "playerctl -p spotify play-pause ; pkill -RTMIN+11 i3blocks"
@@ -214,7 +217,17 @@ bindsym $sup+Return exec --no-startup-id i3-input -F 'rename workspace to "%s"' 
 bindsym $sup+Shift+Return exec --no-startup-id swap_workspaces
 
 # printscreen
+{%- if WORK %}
 bindsym Print exec --no-startup-id gnome-screenshot -i
+{%- else %}
+# interactive to clipboard
+bindsym Print exec --no-startup-id         scrot      -s -f -o $(mktemp /tmp/screenshot_XXX.png) -Z 0 -e 'xclip -selection clipboard -t image/png -i $f'
+# whole screen to clipboard
+bindsym Shift+Print exec --no-startup-id   scrot         -f -o $(mktemp /tmp/screenshot_XXX.png) -Z 0 -e 'xclip -selection clipboard -t image/png -i $f'
+# delay a few seconds
+bindsym Control+Print exec --no-startup-id scrot -d 3 -s -f -o $(mktemp /tmp/screenshot_XXX.png) -Z 0 -e 'xclip -selection clipboard -t image/png -i $f'
+# TODO: look at flameshot or slurp instead
+{%- endif %}
 
 # dmenu emoji script
 bindsym $sup+a exec --no-startup-id ~/bin/dmenu-emoji
