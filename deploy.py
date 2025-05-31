@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import dataclasses
-from typing import Optional, Self
+from typing import Any, Optional, Self
 
 import click
 import jinja2
@@ -22,20 +22,13 @@ def load_config_file(path: pathlib.Path) -> dict[str, str]:
     return vars
 
 
-def load_variables(path: pathlib.Path) -> dict[str, str | bool]:
-    """Special case config file load, handling Python<->Jinja types."""
-    vars = dict[str, str | bool]()
-    for var, val in load_config_file(path).items():
-        # Jinja is aware of types, so e.g. `{% if foo %}` requires `foo` to be a boolean.
-        if val.title() in ("True", "False"):
-            val = val.title() == "True"
-        vars[var] = val
-    return vars
+def load_python_valued_config_file(path: pathlib.Path) -> dict[str, Any]:
+    """Load a config where values are Python values."""
+    return {var: eval(val) for var, val in load_config_file(path).items()}
 
 
 def get_path_binaries() -> set[str]:
     """Get all binaries accessible from `$PATH`."""
-
     binaries = set[str]()
     for dir in os.environ["PATH"].split(":"):
         p = pathlib.Path(dir)
@@ -140,7 +133,7 @@ def main(
 ):
     variables = {
         "PATH_BINARIES": get_path_binaries(),
-        **load_variables(variable_file),
+        **load_python_valued_config_file(variable_file),
     }
     install_if = load_config_file(install_if_file)
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
