@@ -108,7 +108,7 @@ min_width=CPU 100.00%
 [weather]
 interval=600
 
-{% if LAPTOP -%}
+{%- if LAPTOP -%}
 # Battery indicator
 #
 # The battery instance defaults to 0.
