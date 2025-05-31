@@ -147,6 +147,7 @@ bar {
     output {{ display }}
     font pango:Noto Sans Mono 11
     position top
+    status_command i3blocks
 }
 {%- endfor %}
 {%- for display in OTHER_DISPLAYS %}
