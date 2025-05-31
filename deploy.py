@@ -10,10 +10,13 @@ import click
 import diff
 
 
-def load_variables(path: pathlib.Path) -> dict[str, str]:
-    vars = dict[str, str]()
+def load_variables(path: pathlib.Path) -> dict[str, str | bool]:
+    vars = dict[str, str | bool]()
     for line in path.read_text().splitlines():
         [var, val] = line.split("=", maxsplit=1)
+        # Jinja is aware of types, so e.g. `{% if foo %}` requires `foo` to be a boolean.
+        if val.title() in ("True", "False"):
+            val = val.title() == "True"
         vars[var] = val
     return vars
 
@@ -44,7 +47,7 @@ class TemplateFile:
         existing = self.read_existing() or ""
         diff.pretty_print(diff.diff(existing, self.render()))
 
-    def write(self, variables: dict[str, str]):
+    def write(self):
         self.output_path.write_text(self.render())
 
     @classmethod
@@ -115,7 +118,7 @@ def main(
             elif command == "s":
                 break
             elif command == "o" and click.confirm(text="Are you sure?"):
-                file.write(variables)
+                file.write()
                 break
             elif command == "q":
                 return
