@@ -18,7 +18,7 @@ font pango:Noto Sans Mono 10
 floating_modifier $caps
 
 bindsym $caps+t exec --no-startup-id {% if "terminator" in PATH_BINARIES %}terminator{% else %}xterm{% endif %}
-bindsym $caps+w exec --no-startup-id {% if "firefox" in PATH_BINARIES %}firefox{% else %}chrome{% endif %}
+bindsym $caps+w exec --no-startup-id {% if "firefox" in PATH_BINARIES %}firefox{% else %}google-chrome-stable{% endif %}
 
 # kill focused window
 bindsym $sup+q kill
