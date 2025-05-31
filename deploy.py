@@ -48,12 +48,13 @@ class TemplateFile:
         self.output_path.write_text(self.render())
 
     @classmethod
-    def create(cls, env: jinja2.Environment, output_dir: pathlib.Path, template_name: str) -> Self:
-        template = env.get_template(template_name)
-        template_path = pathlib.Path(template_name)
-        if template_path.is_absolute():
-            raise ValueError(f"Unsupported absolute template path: {template_path}")
-
+    def create(
+        cls,
+        env: jinja2.Environment,
+        output_dir: pathlib.Path,
+        template_path: pathlib.Path,
+    ) -> Self:
+        template = env.get_template(str(template_path))
         output_path = output_dir.joinpath(*template_path.parts[1:])
         return cls(output_path, template)
 
@@ -92,8 +93,12 @@ def main(
     env.globals.update(variables)  # type: ignore
 
     for template_name in loader.list_templates():
+        template_path = pathlib.Path(template_name)
+        if template_path.is_absolute():
+            raise ValueError(f"Unsupported absolute template path: {template_path}")
+
         while True:
-            file = TemplateFile.create(env, output_dir, template_name)
+            file = TemplateFile.create(env, output_dir, template_path)
             if not file.has_diff():
                 break
 
