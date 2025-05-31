@@ -97,7 +97,7 @@ def main(
 ):
     variables = load_variables(variable_file)
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
-    env = jinja2.Environment(loader=loader)
+    env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined)
     env.globals.update(variables)  # type: ignore
 
     for template_name in loader.list_templates():
