@@ -1,1 +1,11 @@
 bashrc=SHELL == "bash"
+
+dunst="dunst" in PATH_BINARIES
+i3="i3" in PATH_BINARIES
+i3blocks="i3" in PATH_BINARIES
+terminator="terminator" in PATH_BINARIES
+vim="vim" in PATH_BINARIES
+
+# Currently only work laptop needs these tweaks.
+xmodmap=WORK
+xsession=WORK
