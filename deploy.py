@@ -79,7 +79,7 @@ class TemplateFile:
         existing = self.read_existing() or ""
         print(f"Diff to apply from '{self.template_path}' to '{self.output_path}':")
         diff.pretty_print(
-            diff.diff(self.render(), existing), context_lines=context_lines
+            diff.diff(existing, self.render()), context_lines=context_lines
         )
 
     def write(self):
