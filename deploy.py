@@ -15,6 +15,8 @@ def load_config_file(path: pathlib.Path) -> dict[str, str]:
     """Load a generic `variable=value` line-by-line file."""
     vars = dict[str, str]()
     for line in path.read_text().splitlines():
+        if line.startswith("#") or line.startswith("//") or not line.strip():
+            continue
         [var, val] = line.split("=", maxsplit=1)
         vars[var] = val
     return vars
@@ -56,7 +58,8 @@ class TemplateFile:
         return pathlib.Path(self.template.filename)
 
     def render(self) -> str:
-        return self.template.render()
+        # Jinja seems to strip the trailing newline, leaving diff artefacts.
+        return self.template.render() + "\n"
 
     def read_existing(self) -> Optional[str]:
         try:
@@ -68,13 +71,16 @@ class TemplateFile:
         # Special case: if the generated file is empty, don't create the file if it doesn't already exist.
         # This allows for not installing e.g. a bashrc config if the shell isn't bash - we just make the
         # file empty.
-        if self.render().strip() == "" and self.read_existing() is None:
+        if self.render().strip() == "" and not self.output_path.exists():
             return False
         return self.read_existing() != self.render()
 
-    def print_diff(self):
+    def print_diff(self, context_lines: int):
         existing = self.read_existing() or ""
-        diff.pretty_print(diff.diff(existing, self.render()))
+        print(f"Diff to apply from '{self.template_path}' to '{self.output_path}':")
+        diff.pretty_print(
+            diff.diff(self.render(), existing), context_lines=context_lines
+        )
 
     def write(self):
         self.output_path.write_text(self.render())
@@ -119,12 +125,18 @@ class TemplateFile:
 @click.option(
     "--diff_only", default=False, help="Whether to only print diffs, no editors."
 )
+@click.option(
+    "--diff_context_lines",
+    default=2,
+    help="How many lines of context to print in the diff view.",
+)
 def main(
     variable_file: pathlib.Path,
     install_if_file: pathlib.Path,
     config_dir: pathlib.Path,
     output_dir: pathlib.Path,
     diff_only: bool,
+    diff_context_lines: int,
 ):
     variables = {
         "PATH_BINARIES": get_path_binaries(),
@@ -154,8 +166,7 @@ def main(
             if not file.has_diff():
                 break
 
-            print(f"Diff between '{file.template_path}' and '{file.output_path}':")
-            file.print_diff()
+            file.print_diff(diff_context_lines)
 
             if diff_only:
                 break
