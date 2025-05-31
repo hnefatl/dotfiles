@@ -10,10 +10,19 @@ import click
 import diff
 
 
-def load_variables(path: pathlib.Path) -> dict[str, str | bool]:
-    vars = dict[str, str | bool]()
+def load_config_file(path: pathlib.Path) -> dict[str, str]:
+    """Load a generic `variable=value` line-by-line file."""
+    vars = dict[str, str]()
     for line in path.read_text().splitlines():
         [var, val] = line.split("=", maxsplit=1)
+        vars[var] = val
+    return vars
+
+
+def load_variables(path: pathlib.Path) -> dict[str, str | bool]:
+    """Special case config file load, handling Python<->Jinja types."""
+    vars = dict[str, str | bool]()
+    for var, val in load_config_file(path).items():
         # Jinja is aware of types, so e.g. `{% if foo %}` requires `foo` to be a boolean.
         if val.title() in ("True", "False"):
             val = val.title() == "True"
@@ -75,6 +84,12 @@ class TemplateFile:
     type=pathlib.Path,
 )
 @click.option(
+    "--install_if_file",
+    default=pathlib.Path("install_if.txt"),
+    help="Path to file holding conditional installation expressions for this install.",
+    type=pathlib.Path,
+)
+@click.option(
     "--config_dir",
     default=pathlib.Path("configs"),
     help="Path to directory holding dotfile configurations.",
@@ -91,11 +106,13 @@ class TemplateFile:
 )
 def main(
     variable_file: pathlib.Path,
+    install_if_file: pathlib.Path,
     config_dir: pathlib.Path,
     output_dir: pathlib.Path,
     diff_only: bool,
 ):
     variables = load_variables(variable_file)
+    install_if = load_config_file(install_if_file)
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
     env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined)
     env.globals.update(variables)  # type: ignore
@@ -104,6 +121,11 @@ def main(
         template_path = pathlib.Path(template_name)
         if template_path.is_absolute():
             raise ValueError(f"Unsupported absolute template path: {template_path}")
+
+        # If the directory has an associated conditional expression, only install if it's met.
+        if install_if_expression := install_if.get(template_path.parts[0]):
+            if not env.compile_expression(install_if_expression)(variables):
+                continue
 
         click.clear()
         while True:
