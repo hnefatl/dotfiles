@@ -1,4 +1,4 @@
-{% if LAPTOP %}
+{%- if LAPTOP -%}
 #!/bin/bash
 
 function act {
@@ -32,4 +32,4 @@ export -f act
 # invocations from stacking in the background
 timeout 5s bash -c act
 
-{% endif %}
+{%- endif %}

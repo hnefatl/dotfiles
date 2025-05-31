@@ -1,5 +1,5 @@
-{# On work devices, can't install Discord through package manager, need to manage it locally #}
-{% if WORK %}
+{#- On work devices, can't install Discord through package manager, need to manage it locally #}
+{%- if WORK -%}
 #!/bin/bash
 
 set -x -e
@@ -12,4 +12,4 @@ tar xzvf "$download_file" -C "$HOME"
 rm "$download_file"
 nohup discord &>/dev/null &
 
-{% endif %}
+{%- endif %}
