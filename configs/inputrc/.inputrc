@@ -1,0 +1,10 @@
+set mark-symlinked-directories on
+set editing-mode vi
+set show-mode-in-prompt on
+# Set nice line/block cursor modes
+set vi-ins-mode-string \1\e[6 q\2
+set vi-cmd-mode-string \1\e[2 q\2
+# Remove timeout between switching modes
+set keyseq-timeout 1
+set keymap vi-insert
+RETURN: "\e\n"

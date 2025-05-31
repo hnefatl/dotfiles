@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh kcollister-cloud.c.googlers.com systemctl --user restart shpool

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -x -e
+
+pkill Discord || true
+download_file=$(mktemp)
+wget -O "$download_file" 'https://discord.com/api/download?platform=linux&format=tar.gz'
+rm -r ~/Discord
+tar xzvf "$download_file" -C "$HOME"
+rm "$download_file"
+nohup discord &>/dev/null &

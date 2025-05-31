@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+PREMIUM=1
+
+playerctl="/usr/bin/env playerctl -p spotify"
+
+if [[ "$BLOCK_BUTTON" -eq 3 ]] ; then
+    $spotify play-pause
+fi
+
+song=$($playerctl metadata title) || exit 0
+album=$($playerctl metadata album) || exit 0
+artist=$($playerctl metadata artist) || exit 0
+status=$($playerctl status) || exit 0
+length=50
+
+get_spotify_index () {
+    /usr/bin/env pacmd list-sink-inputs | awk -v name=spotify '$1 == "index:" {idx = $2} ; $1 == "application.name" && $3 == "\"" name "\"" {print idx; exit}'
+}
+
+if [[ ! "$PREMIUM" ]] ; then
+    # Mute on adverts
+    ad_playing_file="/tmp/spotify_ad_playing"
+    if [[ "$song" == "Advertisement" || "$song" == "Spotify" ]] && [[ "$album" == "" ]] && [[ "$artist" == "" ]] ; then
+        # Temp file exists, we've already muted for this advert
+        if [[ ! -f "$ad_playing_file" ]] ; then
+            /usr/bin/env pacmd set-sink-input-mute $(get_spotify_index) 1
+            touch "$ad_playing_file"
+        fi
+    else
+        if [[ -f "$ad_playing_file" ]] ; then
+            # No ad but file exists, ad just ended.
+            sleep 1
+            /usr/bin/env pacmd set-sink-input-mute $(get_spotify_index) 0
+            rm "$ad_playing_file"
+        fi
+    fi
+fi
+
+# Render the full text, omitting album/artist if not specified
+fullstring="$song"
+if [[ "$artist" != "" ]] ; then
+    fullstring="$fullstring - $artist"
+fi
+if [[ "$album" != "" ]] ; then
+    fullstring="$fullstring ($album)"
+fi
+
+# Trim the full string to $length characters
+if [[ ${#fullstring} -gt $length ]] ; then
+    shortstring="${fullstring:0:$((length - 3))}..."
+else
+    shortstring="${fullstring:0:$length}"
+fi
+
+# Change the colour of the playing button depending on playback
+if [[ "$status" == "Playing" ]] ; then
+    status='<span color="#00FF00">▶</span>'
+elif [[ "$status" == "Paused" ]] ; then
+    status='<span color="#FF0000">▶</span>'
+elif [[ "$status" == "Stopped" ]] ; then
+    status='<span color="#FF0000">X</span>'
+fi
+
+
+escaped="${shortstring//&/&amp;}"
+escaped="${escaped//</&lt;}"
+escaped="${escaped//>/&gt;}"
+echo "$escaped $status"

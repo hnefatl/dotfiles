@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+import json
+import subprocess
+
+workspaces_output = subprocess.check_output('i3-msg -t get_workspaces', shell=True)
+workspaces = json.loads(workspaces_output.decode())
+
+workspace_names = [workspace['name'] for workspace in workspaces if workspace['num'] > 0 and workspace['num'] != 10]
+workspace_names.sort(key=lambda n: int(n.split(' ')[0]))
+
+for i, name in enumerate(workspace_names, start=1):
+  new_name = " ".join([str(i)] + list(filter(None, name.split(' ')))[1:])
+  command = f"i3-msg 'rename workspace \"{name}\" to \"{new_name}\"'"
+  subprocess.check_output(command, shell=True)

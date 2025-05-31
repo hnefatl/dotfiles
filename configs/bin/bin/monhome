@@ -1,0 +1,32 @@
+#!/bin/bash
+
+function act {
+    laptop=eDP-1
+    secondary=DP-3
+
+    set -x
+
+    # Reset any external monitors
+    xrandr --output "$secondary" --off
+    xrandr --auto
+    
+    # Wait until ready
+    until xrandr | grep "$secondary connected" > /dev/null ; do sleep 0.1 ; done
+
+    # Configure things correctly
+    xrandr --output "$laptop" --primary --mode 1920x1200 --pos 320x1440 --output $secondary --mode 2560x1440 --pos 0x0
+    sleep 0.5
+    
+    current_workspace=$(i3-msg -t get_workspaces | jq -r '.[] | select(.focused==true).name')
+    # Move numbered workspaces to secondary display
+    i3-msg -t get_workspaces | jq -r '.[] | select(.num >= 0) | .num' | while read workspace_num ; do
+        i3-msg "[workspace=\"$workspace_num\"]" move workspace to output $secondary > /dev/null
+    done
+    i3-msg "workspace $current_workspace"
+}
+
+# Export to subprocesses so timeout can be run
+export -f act
+# If the screens aren't in the desired state, die after a few seconds, to avoid multiple
+# invocations from stacking in the background
+timeout 5s bash -c act

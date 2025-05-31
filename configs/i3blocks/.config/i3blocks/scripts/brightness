@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+curr="$(/usr/bin/env brightnessctl get)"
+max="$(/usr/bin/env brightnessctl max)"
+
+percent="$((($curr * 100) / $max))"
+echo "$percent%"
+echo "$percent%"

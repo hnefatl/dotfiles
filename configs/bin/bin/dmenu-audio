@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+exclude='HDMI'
+sinkname="$(pactl list short sinks | grep -v "$exclude" | awk '{print $2}' | dmenu)"
+
+# could use `pactl --format=json list sinks` for better names
+# can chain "missing parameter" expansions like
+# echo ${bing:-${bop:-$bar}}
+
+if [[ -n "$sinkname" ]] ; then
+    pactl set-default-sink "$sinkname"
+    # Move active sink inputs
+    for inputindex in $(pactl list short sink-inputs | awk '{print $1}') ; do
+        pactl move-sink-input "$inputindex" "$sinkname"
+    done
+    # Update the volume i3block
+    pkill -RTMIN+10 i3blocks
+fi

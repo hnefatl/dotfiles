@@ -1,0 +1,37 @@
+#!/bin/bash
+
+function act {
+    laptop=eDP-1
+    secondary=DP-3-8
+    tertiary=DP-3-1-8
+
+    set -x
+
+    # Reset any external monitors
+    xrandr --output "$secondary" --off --output "$tertiary" --off
+    xrandr --auto
+
+    # Wait until ready
+    until xrandr | grep "$secondary connected" > /dev/null ; do sleep 0.1 ; done
+    until xrandr | grep "$tertiary connected" > /dev/null ; do sleep 0.1 ; done
+    
+    # Configure things correctly
+    xrandr --output "$laptop" --primary --mode 1920x1200 --pos 320x1856 --output "$secondary" --mode 2560x1440 --pos 0x416 --output "$tertiary" --mode 2560x1440 --pos 2560x0 --rotate right
+    
+    current_workspace=$(i3-msg -t get_workspaces | jq -r '.[] | select(.focused==true).name')
+    # Move numbered workspaces to secondary display
+    i3-msg -t get_workspaces | jq -r '.[] | select(.num >= 0) | .num' | while read workspace_num ; do
+        i3-msg "[workspace=\"$workspace_num\"]" move workspace to output "$secondary" > /dev/null
+    done
+    
+    # Make a workspace for vertical monitor if one doesn't already exist, and focus it in either case (to avoid getting spurious auto-numbered workspaces on 3rd monitor)
+    i3-msg "workspace vert"
+    i3-msg "[workspace=\"vert\"]" move workspace to output "$tertiary" > /dev/null
+    i3-msg "workspace $current_workspace"
+}
+
+# Export to subprocesses so timeout can be run
+export -f act
+# If the screens aren't in the desired state, die after a few seconds, to avoid multiple
+# invocations from stacking in the background
+timeout 5s bash -c act

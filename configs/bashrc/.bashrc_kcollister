@@ -1,0 +1,29 @@
+shopt -s globstar
+
+alias 🐈="cat"
+
+alias c="clear"
+alias cl="clear;ls"
+alias cll="clear;ls -l"
+alias cla="clear;ls -a"
+alias clla="clear;ls -la"
+alias clal="clear;ls -al"
+alias cx="clear;hg xl"
+
+alias hl="ack --passthru"
+
+alias hga="hg amend"
+alias hge="hg evolve"
+alias hguc="hg uploadchain"
+alias hgua="hg uploadall"
+alias hgae="hg amend ; hg evolve"
+alias hgauc="hg amend ; hg uploadchain"
+alias hgaeuc="hg amend ; hg evolve && hg uploadchain"
+alias hgaeua="hg amend ; hg evolve && hg uploadall"
+alias hgupc='hg up "children(.)"'
+alias hgupp='hg up "parents(.)"'
+
+alias alert="echo -e '\a' ; notify-send 'Alert'"
+
+PATH="$PATH:/home/kcollister/.local/bin"
+

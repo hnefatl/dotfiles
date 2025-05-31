@@ -1,0 +1,15 @@
+#!/bin/bash
+
+workspace1="$(i3-input | tail -n1 | cut -d " " -f 3- || exit 1)"
+if [[ $? -ne 0 ]] ; then
+    exit 0
+fi
+workspace2="$(i3-input | tail -n1 | cut -d " " -f 3- || exit 1)"
+if [[ $? -ne 0 ]] ; then
+    exit 0
+fi
+
+temp="$RANDOM"
+
+#i3-msg "rename workspace number $workspace1 to $temp; rename workspace number $workspace2 to $workspace1; rename workspace number $temp to $workspace2"
+i3-msg "rename workspace \"$workspace1\" to \"$temp\"; rename workspace \"$workspace2\" to \"$workspace1\"; rename workspace \"$temp\" to \"$workspace2\""

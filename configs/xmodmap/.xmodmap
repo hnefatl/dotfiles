@@ -1,0 +1,15 @@
+! Clear initial bindings
+clear lock
+clear mod1
+clear mod3
+clear mod4
+clear Lock
+
+! Replace the caps_lock key with super_r
+keycode 66 = Super_R
+
+! Set our bare minimum bindings
+add mod1 = Alt_L
+! Seems to need to be this way round, otherwise we get errors...
+add mod4 = Super_L
+add mod3 = Super_R

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+shopt -s expand_aliases
+source ~/.bashrc_kcollister
+
+while true ; do
+  "$@"
+  if [[ $? -eq 0 ]] ; then break ; fi
+  sleep 1
+done
