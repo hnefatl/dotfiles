@@ -3,9 +3,10 @@
 import dataclasses
 from typing import Optional, Self
 
-import jinja2
-import pathlib
 import click
+import jinja2
+import os
+import pathlib
 
 import diff
 
@@ -28,6 +29,20 @@ def load_variables(path: pathlib.Path) -> dict[str, str | bool]:
             val = val.title() == "True"
         vars[var] = val
     return vars
+
+
+def get_path_binaries() -> set[str]:
+    """Get all binaries accessible from `$PATH`."""
+
+    binaries = set[str]()
+    for dir in os.environ["PATH"].split(":"):
+        p = pathlib.Path(dir)
+        if not p.is_dir():
+            continue
+        for e in p.iterdir():
+            if e.is_file() and os.access(e, os.X_OK):
+                binaries.add(e.name)
+    return binaries
 
 
 @dataclasses.dataclass(frozen=True)
@@ -111,7 +126,10 @@ def main(
     output_dir: pathlib.Path,
     diff_only: bool,
 ):
-    variables = load_variables(variable_file)
+    variables = {
+        "PATH_BINARIES": get_path_binaries(),
+        **load_variables(variable_file),
+    }
     install_if = load_config_file(install_if_file)
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
     env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined)
@@ -129,7 +147,10 @@ def main(
 
         click.clear()
         while True:
-            file = TemplateFile.create(env, output_dir, template_path)
+            try:
+                file = TemplateFile.create(env, output_dir, template_path)
+            except Exception as e:
+                raise RuntimeError(f"Failed while loading {template_name}") from e
             if not file.has_diff():
                 break
 
