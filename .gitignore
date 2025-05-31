@@ -1,6 +1,8 @@
 .vscode/
 .venv/
+.direnv/
 __pycache__/
+.envrc
 
 # Holds basic variable values for the local system, shouldn't be shared.
 variables.txt

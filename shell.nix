@@ -19,6 +19,6 @@ in pkgs.mkShell {
       python3.12 -m venv $VENV
     fi
     source ./$VENV/bin/activate
-    pip install -r requirements.txt
+    pip install --quiet -r requirements.txt
   '';
 }
