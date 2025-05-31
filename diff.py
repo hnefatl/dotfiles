@@ -2,7 +2,7 @@ import difflib
 
 
 def diff(a: str, b: str) -> list[str]:
-    return list(difflib.ndiff(a.splitlines(), b.splitlines()))
+    return list(difflib.ndiff(a.splitlines(keepends=True), b.splitlines(keepends=True)))
 
 
 def pretty_print(diff: list[str], context_lines: int = 2):
@@ -19,8 +19,9 @@ def pretty_print(diff: list[str], context_lines: int = 2):
         # If we've skipped a range, show a marker
         if last_i is not None and i != last_i + 1:
             print("...")
-        print(_format_colourful(diff[i]))
+        print(_format_colourful(diff[i]), end='')
         last_i = i
+    print()
 
 
 def _format_colourful(line: str) -> str:
