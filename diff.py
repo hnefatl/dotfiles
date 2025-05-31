@@ -19,7 +19,7 @@ def pretty_print(diff: list[str], context_lines: int = 2):
         # If we've skipped a range, show a marker
         if last_i is not None and i != last_i + 1:
             print("...")
-        print(_format_colourful(diff[i]), end='')
+        print(_format_colourful(diff[i]), end="")
         last_i = i
     print()
 

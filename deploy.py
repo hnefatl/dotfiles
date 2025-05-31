@@ -105,6 +105,7 @@ def main(
         if template_path.is_absolute():
             raise ValueError(f"Unsupported absolute template path: {template_path}")
 
+        click.clear()
         while True:
             file = TemplateFile.create(env, output_dir, template_path)
             if not file.has_diff():
@@ -116,10 +117,12 @@ def main(
             if diff_only:
                 break
 
-            print("[e]dit, [s]kip, [o]verwrite, [q]uit")
+            print("[e]dit, [r]efresh, [s]kip, [o]verwrite, [q]uit")
             command = click.getchar()
             if command == "e":
                 click.edit(filename=[str(file.template_path), str(file.output_path)])
+            elif command == "r":
+                continue
             elif command == "s":
                 break
             elif command == "o" and click.confirm(text="Are you sure?"):
