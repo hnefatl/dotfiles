@@ -41,6 +41,11 @@ class TemplateFile:
             return None
 
     def has_diff(self) -> bool:
+        # Special case: if the generated file is empty, don't create the file if it doesn't already exist.
+        # This allows for not installing e.g. a bashrc config if the shell isn't bash - we just make the
+        # file empty.
+        if self.render().strip() == "" and self.read_existing() is None:
+            return False
         return self.read_existing() != self.render()
 
     def print_diff(self):
