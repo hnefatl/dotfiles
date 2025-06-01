@@ -135,7 +135,11 @@ def main(
         "PATH_BINARIES": get_path_binaries(),
         **load_python_valued_config_file(variable_file),
     }
-    install_if = load_config_file(install_if_file)
+    try:
+        install_if = load_config_file(install_if_file)
+    except FileNotFoundError:
+        install_if = dict[str, str]()
+
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
     env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined)
     env.globals.update(variables)  # type: ignore
