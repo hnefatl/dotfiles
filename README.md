@@ -26,6 +26,10 @@ MY_LIST={"foo", "bar"}
 
 This is interpreted as `<variable>=<python expression>`, with all variables being available in the templated config files. Python expressions are evaluated with support for sets such that e.g. `{% "foo" in MY_LIST %}` works as expected.
 
+#### Creation from template
+
+If `deploy.py` is run without an existing `variables.txt` file, an option to symlink one from inside `variables_templates/` will be offered.
+
 #### `PATH_BINARIES`
 
 One additional variable is added to the variable set available in templates: `PATH_BINARIES`. This is the set of filenames of all executable files found in `$PATH` directories.

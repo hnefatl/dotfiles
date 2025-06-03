@@ -40,6 +40,36 @@ def get_path_binaries() -> set[str]:
     return binaries
 
 
+def load_or_create_variables_file(path: pathlib.Path) -> Optional[dict[str, Any]]:
+    if not path.exists():
+        files = list(sorted(path.parent.joinpath("variables_templates/").glob("*.txt")))
+        if not files:
+            print(
+                "No variables.txt file currently exists and no templates exist. Create a file manually."
+            )
+            return None
+        print(
+            "No variables.txt file currently exists. Select an existing template or create the file manually ([q]uit):"
+        )
+        for i, f in enumerate(files):
+            print(f"[{i}]: {f}")
+        while True:
+            index = click.getchar()
+            if index == "q":
+                return None
+            try:
+                source_file = files[int(index)]
+                break
+            except (IndexError, ValueError):
+                print("Invalid selection.")
+        path.symlink_to(source_file)
+
+    return {
+        "PATH_BINARIES": get_path_binaries(),
+        **load_python_valued_config_file(path),
+    }
+
+
 @dataclasses.dataclass(frozen=True)
 class TemplateFile:
     output_path: pathlib.Path
@@ -131,10 +161,8 @@ def main(
     diff_only: bool,
     diff_context_lines: int,
 ):
-    variables = {
-        "PATH_BINARIES": get_path_binaries(),
-        **load_python_valued_config_file(variable_file),
-    }
+    if not (variables := load_or_create_variables_file(variable_file)):
+        return
     try:
         install_if = load_config_file(install_if_file)
     except FileNotFoundError:
@@ -176,9 +204,11 @@ def main(
                 continue
             elif command == "s":
                 break
-            elif command == "o" and click.confirm(text="Are you sure?"):
-                file.write()
-                break
+            elif command == "o":
+                print("Are you sure?")
+                if click.getchar() == "y":
+                    file.write()
+                    break
             elif command == "q":
                 return
 
