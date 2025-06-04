@@ -1,73 +1,38 @@
 #!/usr/bin/env python
 
 import dataclasses
-from typing import Any, Optional, Self
+from typing import Optional, Self
 
 import click
 import jinja2
-import os
 import pathlib
 
 import diff
+import machine_configs
 
 
-def load_config_file(path: pathlib.Path) -> dict[str, str]:
-    """Load a generic `variable=value` line-by-line file."""
-    vars = dict[str, str]()
-    for line in path.read_text().splitlines():
-        if line.startswith("#") or line.startswith("//") or not line.strip():
-            continue
-        [var, val] = line.split("=", maxsplit=1)
-        vars[var] = val
-    return vars
-
-
-def load_python_valued_config_file(path: pathlib.Path) -> dict[str, Any]:
-    """Load a config where values are Python values."""
-    return {var: eval(val) for var, val in load_config_file(path).items()}
-
-
-def get_path_binaries() -> set[str]:
-    """Get all binaries accessible from `$PATH`."""
-    binaries = set[str]()
-    for dir in os.environ["PATH"].split(":"):
-        p = pathlib.Path(dir)
-        if not p.is_dir():
-            continue
-        for e in p.iterdir():
-            if e.is_file() and os.access(e, os.X_OK):
-                binaries.add(e.name)
-    return binaries
-
-
-def load_or_create_variables_file(path: pathlib.Path) -> Optional[dict[str, Any]]:
+def load_or_create_configuration_file(
+    path: pathlib.Path,
+) -> Optional[machine_configs.MachineConfig]:
     if not path.exists():
-        files = list(sorted(path.parent.joinpath("variables_templates/").glob("*.txt")))
-        if not files:
-            print(
-                "No variables.txt file currently exists and no templates exist. Create a file manually."
-            )
-            return None
         print(
-            "No variables.txt file currently exists. Select an existing template or create the file manually ([q]uit):"
+            f"'{path}' does not exist. Select an existing config or update `variables.py` ([q]uit):"
         )
-        for i, f in enumerate(files):
-            print(f"[{i}]: {f}")
+        config_names = list(sorted(machine_configs.MACHINE_CONFIGS.keys()))
+        for i, config_name in enumerate(config_names):
+            print(f"[{i}]: {config_name}")
         while True:
             index = click.getchar()
             if index == "q":
                 return None
             try:
-                source_file = files[int(index)]
+                config_name = config_names[int(index)]
                 break
             except (IndexError, ValueError):
                 print("Invalid selection.")
-        path.symlink_to(source_file)
+        path.write_text(config_name)
 
-    return {
-        "PATH_BINARIES": get_path_binaries(),
-        **load_python_valued_config_file(path),
-    }
+    return machine_configs.MACHINE_CONFIGS[path.read_text()]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -122,15 +87,9 @@ class TemplateFile:
 
 @click.command()
 @click.option(
-    "--variable_file",
-    default=pathlib.Path("variables.txt"),
-    help="Path to file holding variable definitions for this install.",
-    type=pathlib.Path,
-)
-@click.option(
-    "--install_if_file",
-    default=pathlib.Path("install_if.txt"),
-    help="Path to file holding conditional installation expressions for this install.",
+    "--machine_config_file",
+    default=pathlib.Path("machine_config.txt"),
+    help="Path to file holding machine configuration name for this install.",
     type=pathlib.Path,
 )
 @click.option(
@@ -154,33 +113,28 @@ class TemplateFile:
     help="How many lines of context to print in the diff view.",
 )
 def main(
-    variable_file: pathlib.Path,
-    install_if_file: pathlib.Path,
+    machine_config_file: pathlib.Path,
     config_dir: pathlib.Path,
     output_dir: pathlib.Path,
     diff_only: bool,
     diff_context_lines: int,
 ):
-    if not (variables := load_or_create_variables_file(variable_file)):
+    if not (machine_config := load_or_create_configuration_file(machine_config_file)):
         return
-    try:
-        install_if = load_config_file(install_if_file)
-    except FileNotFoundError:
-        install_if = dict[str, str]()
+    should_install_directory = machine_configs.should_install_directory(machine_config)
 
     loader = jinja2.FileSystemLoader(searchpath=str(config_dir))
     env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined)
-    env.globals.update(variables)  # type: ignore
+    env.globals.update(machine_config.as_template_variables())  # type: ignore
 
     for template_name in loader.list_templates():
         template_path = pathlib.Path(template_name)
         if template_path.is_absolute():
             raise ValueError(f"Unsupported absolute template path: {template_path}")
 
-        # If the directory has an associated conditional expression, only install if it's met.
-        if install_if_expression := install_if.get(template_path.parts[0]):
-            if not env.compile_expression(install_if_expression)(variables):
-                continue
+        # Skip directories where the installation condition isn't met.
+        if not should_install_directory.get(template_path.parts[0]):
+            continue
 
         click.clear()
         while True:

@@ -13,39 +13,11 @@ This system is designed for a specific set of features/constraints:
 
 ## Configuring
 
-### `variables.txt`
+### `machine_config.txt`
 
-Each install needs a file called `variables.txt` at the root of the repo, in the format:
+Each install needs a file called `machine_config.txt` at the root of the repo, containing one of the keys from `machine_configs.MACHINE_CONFIGS`. This selects which machine configuration to install on the local machine, and isn't persisted in version control.
 
-```python
-WORK=False
-LAPTOP=True
-SHELL="zsh"
-MY_LIST={"foo", "bar"}
-```
-
-This is interpreted as `<variable>=<python expression>`, with all variables being available in the templated config files. Python expressions are evaluated with support for sets such that e.g. `{% "foo" in MY_LIST %}` works as expected.
-
-#### Creation from template
-
-If `deploy.py` is run without an existing `variables.txt` file, an option to symlink one from inside `variables_templates/` will be offered.
-
-#### `PATH_BINARIES`
-
-One additional variable is added to the variable set available in templates: `PATH_BINARIES`. This is the set of filenames of all executable files found in `$PATH` directories.
-
-### `install_if.txt`
-
-An install may include a file `install_if.txt` at the root of the repo, in the format:
-
-```ini
-bashrc=SHELL == "bash"
-dunst="dunst" in PATH_BINARIES
-```
-
-This is interpreted as `<config subdirectory>=<jinja2 expression>`: if a subdirectory of `configs/` matches the key, then the templates within will only be processed if the Jinja2 expression evaluates to `true`.
-
-This allows excluding whole subtrees of configs if they're not relevant to this machine.
+If the file doesn't exist when `deploy.py` is run, the tool will offer to create the file from one of the defined machine configurations.
 
 ## Deployment
 
