@@ -28,6 +28,7 @@ class MachineConfig:
     laptop: bool
     pc: bool
     window_manager: str
+    primary_display: str
     statusbar_displays: frozenset[str]
     other_displays: frozenset[str]
     path_binaries: frozenset[str] = _PATH_BINARIES
@@ -44,6 +45,7 @@ MACHINE_CONFIGS: dict[str, MachineConfig] = {
         laptop=False,
         pc=True,
         window_manager="i3",
+        primary_display="DP-0",
         statusbar_displays=frozenset(),
         other_displays=frozenset({"HDMI-0"}),
     ),
@@ -53,6 +55,7 @@ MACHINE_CONFIGS: dict[str, MachineConfig] = {
         laptop=True,
         pc=False,
         window_manager="i3",
+        primary_display="eDP-1",
         statusbar_displays=frozenset({"DP-3", "DP-3-8"}),
         other_displays=frozenset({"DP-3-1-8"}),
     ),
