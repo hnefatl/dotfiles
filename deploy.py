@@ -159,7 +159,7 @@ def main(
             elif command == "s":
                 break
             elif command == "o":
-                print("Are you sure?")
+                print("Are you sure? [y/n]")
                 if click.getchar() == "y":
                     file.write()
                     break

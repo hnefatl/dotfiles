@@ -136,8 +136,8 @@ bindsym $sup+i resize grow height 5px or 5ppt
 bindsym $sup+Shift+i resize shrink height 5px or 5ppt
 
 bar {
-    output {{ PRIMARY_DISPLAY }}
-    tray_output {{ PRIMARY_DISPLAY }}
+    output primary
+    tray_output primary
     position top
     font pango:Noto Sans Mono 11
     status_command i3blocks
@@ -145,6 +145,7 @@ bar {
 {%- for display in STATUSBAR_DISPLAYS|sort %}
 bar {
     output {{ display }}
+    tray_output none
     font pango:Noto Sans Mono 11
     position top
     status_command i3blocks
@@ -153,6 +154,7 @@ bar {
 {%- for display in OTHER_DISPLAYS|sort %}
 bar {
     output {{ display }}
+    tray_output none
     position top
     font pango:Noto Sans Mono 11
 }
