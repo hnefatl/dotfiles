@@ -70,8 +70,10 @@ class TemplateFile:
             diff.diff(existing, self.render()), context_lines=context_lines
         )
 
-    def write(self):
+    def write_output_path(self):
         self.output_path.write_text(self.render())
+    def write_template_path(self):
+        self.template_path.write_bytes(self.output_path.read_bytes())
 
     @classmethod
     def create(
@@ -136,7 +138,6 @@ def main(
         if not should_install_directory.get(template_path.parts[0], True):
             continue
 
-        click.clear()
         while True:
             try:
                 file = TemplateFile.create(env, output_dir, template_path)
@@ -150,7 +151,7 @@ def main(
             if diff_only:
                 break
 
-            print("[e]dit, [r]efresh, [s]kip, [o]verwrite, [q]uit")
+            print("[e]dit, [r]efresh, [s]kip, [o]verwrite destination, overwrite [t]emplate, [c]lear, [q]uit")
             command = click.getchar()
             if command == "e":
                 click.edit(filename=[str(file.template_path), str(file.output_path)])
@@ -158,11 +159,16 @@ def main(
                 continue
             elif command == "s":
                 break
-            elif command == "o":
+            elif command == "o" or command == "t":
                 print("Are you sure? [y/n]")
                 if click.getchar() == "y":
-                    file.write()
+                    if command == "o":
+                        file.write_output_path()
+                    else:
+                        file.write_template_path()
                     break
+            elif command == "c":
+                click.clear()
             elif command == "q":
                 return
 
