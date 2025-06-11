@@ -133,7 +133,7 @@ def main(
             raise ValueError(f"Unsupported absolute template path: {template_path}")
 
         # Skip directories where the installation condition isn't met.
-        if not should_install_directory.get(template_path.parts[0]):
+        if not should_install_directory.get(template_path.parts[0], True):
             continue
 
         click.clear()

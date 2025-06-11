@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-exclude='HDMI'
-sinkname="$(pactl list short sinks | grep -v "$exclude" | awk '{print $2}' | dmenu)"
+# Don't use monitor speakers on any machine.
+exclude='HDMI|hdmi'
+sinkname="$(pactl list short sinks | grep -vE "$exclude" | awk '{print $2}' | sort | dmenu)"
 
 # could use `pactl --format=json list sinks` for better names
 # can chain "missing parameter" expansions like
