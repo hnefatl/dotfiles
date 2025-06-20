@@ -59,6 +59,16 @@ MACHINE_CONFIGS: dict[str, MachineConfig] = {
         statusbar_displays=frozenset({"DP-3", "DP-3-8"}),
         other_displays=frozenset({"DP-3-1-8"}),
     ),
+    "personal_laptop": MachineConfig(
+        work=False,
+        shell="zsh",
+        laptop=True,
+        pc=False,
+        window_manager="i3",
+        primary_display="eDP-1",
+        statusbar_displays=frozenset(),
+        other_displays=frozenset(),
+    ),
 }
 
 
