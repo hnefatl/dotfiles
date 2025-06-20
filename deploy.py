@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import dataclasses
+import stat
 from typing import Optional, Self
 
 import click
@@ -71,7 +72,11 @@ class TemplateFile:
         )
 
     def write_output_path(self):
+        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        # TODO: include execute bit in diff calculation
         self.output_path.write_text(self.render())
+        if self.template_path.stat().st_mode & stat.S_IXUSR:
+            self.output_path.chmod(self.output_path.stat().st_mode | stat.S_IXUSR)
     def write_template_path(self):
         self.template_path.write_bytes(self.output_path.read_bytes())
 
